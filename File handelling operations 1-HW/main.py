@@ -1,0 +1,6 @@
+file1=open("Basketball.txt","r")
+print(file1.read()) 
+print(file1.read(3))  
+print(file1.readlines()) 
+print(file1.readline()) 
+file1.close()
