@@ -1,81 +1,56 @@
-import pygame
-import random
+from tkinter import*
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 
-SCREEN_WIDTH, SCREEN_HEIGHT= 500, 400
-MOVMENT_SPEED= 5
-FONT_SIZE= 72
+window= Tk()
+window.title("Codingal's Text Editor")
+window.geometry("600x500")
+window.rowconfigure(0, minsize=800, weight=1)
+window.columnconfigure(1, minsize=800, weight=1)
 
-pygame.init()
+def open_file():
+    filepath = askopenfilename(
+        filetypes=[("Text Files", "*txt"), ("All Files", "*.*")]
 
-background_image=pygame.transform.scale(pygame.image.load("bg.avif"),
-                                        (SCREEN_WIDTH, SCREEN_HEIGHT))
+    )
 
-font = pygame.font.SysFont("Times New Roman", FONT_SIZE)
+    if not filepath:
+        return
+    txt_edit.delete(1.0, END)
 
-class Sprite(pygame.sprite.Sprite):
+    with open(filepath, "r") as input_file:
 
-    def __init__(self,color,height,width):
-        super().__init__()
-        self.image = pygame.Surface([width, height])
-        self.image.fill(
-            pygame.Color('green'))
-        pygame.draw.rect(self.image, color, pygame.Rect(0,0,width,height))
-        self.rect=self.image.get_rect()
+        text=input_file.road()
+        txt_edit.insert(END, text)
+        input_file.close()
 
-    def move(self, x_chnage, y_chnage):
-        self.rect.x=max(
-            min(self.rect.x + x_chnage, SCREEN_WIDTH - self.rect.width), 0)
-        
-        self.rect.y=max(
-            min(self.rect.y + y_chnage, SCREEN_WIDTH - self.rect.height), 0)
-        
+    window.title(f"Codingal's Text Editor - {filepath}")
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Coliding sprites")
-all_sprites = pygame.sprite.Group()
+def save_file():
+    filepath = asksaveasfilename(
+        defaultextension="txt",
+        filetypes=[("Text Files", "*txt"), ("All Files", "*.*")]
 
+    )
 
-sprite1= Sprite(pygame.Color('black'), 20,30)
-sprite1.rect.x, sprite1.rect.y= random.randint(
-    0, SCREEN_WIDTH - sprite1.rect.width), random.randint(
-        0, SCREEN_HEIGHT - sprite1.rect.height)
-all_sprites.add(sprite1)
+    if not filepath:
+        return
 
-sprite2= Sprite(pygame.Color('yellow'), 20,30)
-sprite2.rect.x, sprite2.rect.y= random.randint(
-    0, SCREEN_WIDTH - sprite2.rect.width), random.randint(
-        0, SCREEN_HEIGHT - sprite2.rect.height)
-all_sprites.add(sprite2)
+    with open(filepath, "w") as output_file:
+        text = txt_edit.get(1.0, END)
+        output_file.write(text)
 
-running, won= True, False
-clock =pygame.time.Clock()
+    window.title(f"Codingal's Text Editor - {filepath}")
 
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN
-                                         and event.key == pygame.K_x):
-            
-            running = False
+txt_edit = Text(window)
+fr_buttons = Frame(window, relief= RAISED, bd=2)
+btn_open = Button(fr_buttons, text="Open", command= open_file)
+btn_save = Button(fr_buttons, text="Save As...", command=save_file)
 
-        if not won:
-            keys = pygame.key.get_pressed()
-            x_chnage= (keys[pygame.K_RIGHT] - keys [pygame.K_LEFT]) * MOVMENT_SPEED
-            y_chnage= (keys[pygame.K_DOWN] - keys [pygame.K_UP]) * MOVMENT_SPEED
-            sprite1.move(x_chnage, y_chnage)
+btn_open.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
+btn_save.grid(row=1, column=0, sticky="ew", pady=5)
 
-        if sprite1.rect.colliderect(sprite2.rect):
-            all_sprites.remove(sprite2)
-            won = True
+fr_buttons.grid(row=0, column=0, sticky="ns")
+txt_edit.grid(row=0, column=1, sticky="nsew")
 
-        screen.blit(background_image, (0,0))
-        all_sprites.draw(screen)
+window.mainloop()
 
-        if won:
-            win_text= font.render("You win!", True, pygame.Color('white'))
-            screen.blit(win_text, ((SCREEN_WIDTH - win_text.get_width())//2,
-                        (SCREEN_HEIGHT - win_text.get_height()) //2 ))
-            
-
-        pygame.display.flip()
-
-pygame.quit()
